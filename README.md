@@ -1,4 +1,4 @@
-# 💎 Jewellery E-commerce Backend (Node.js + MongoDB )
+# 💎 Jewellery E-commerce Backend (Node.js + MongoDB + render )
 
 This is a backend server built with **Node.js**, **Express**, and **MongoDB** for a jewellery e-commerce application. It supports product management, image uploads (via Cloudinary), and category-based filtering.
 
