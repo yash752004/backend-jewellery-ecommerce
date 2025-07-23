@@ -149,7 +149,7 @@ const seedProducts = async () => {
     console.log('✅ Database cleared! Inserting products...');
     await Product.insertMany(products);
     console.log('✅ Products inserted successfully!');
-    process.exit(0);
+    // process.exit(0);
   } catch (error) {
     console.error('❌ Error inserting products:', error);
     process.exit(1);

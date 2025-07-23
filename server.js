@@ -5,16 +5,11 @@ const productRoutes = require('./routes/productRoutes');
 const cors = require('cors');
 const seedProducts = require('./seed');
 
-dotenv.config({debug: true}); // Load .env variables with debug mode
+dotenv.config({ debug: true }); // Load .env variables with debug mode
 
 connectDB();
 
-try {
-    await seedProducts();
-    console.log('✅ Products seeded');
-} catch (error) {
-    console.error('❌ Error seeding products:', error);
-}
+seedProducts();
 
 
 const app = express();
