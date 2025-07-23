@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Product</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      max-width: 700px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .specRow {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .specRow input {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <h2>🛍️ Add New Product</h2>
+  <form id="productForm">
+    <label>Name</label>
+    <input type="text" name="name" required />
+
+    <label>Prose</label>
+    <input type="text" name="prose" required />
+
+    <label>Category</label>
+    <select name="category" required>
+      <option>Siblings bond</option>
+      <option>Wedding jewellery</option>
+      <option>Casual jewellery</option>
+    </select>
+
+    <label>Price</label>
+    <input type="number" name="price" required />
+
+    <label>Description</label>
+    <textarea name="description" required></textarea>
+
+    <label>Upload Images (Min 1)</label>
+    <input type="file" id="imageUpload" multiple accept="image/*" required />
+
+    <label>Specifications</label>
+    <div id="specificationsContainer">
+      <div class="specRow">
+        <input type="text" placeholder="Key (e.g. Material)" class="specKey" />
+        <input type="text" placeholder="Value (e.g. Gold plated)" class="specValue" />
+      </div>
+    </div>
+    <button type="button" class="btn" id="addSpecBtn">+ Add Specification</button>
+
+    <label>Product Details</label>
+    <textarea name="productDetails" required></textarea>
+
+    <label>Benefits</label>
+    <textarea name="benefits" required></textarea>
+
+    <label>Return and Delivery</label>
+    <textarea name="returnAndDelivery" required></textarea>
+
+    <button class="btn" type="submit">Submit Product</button>
+  </form>
+
+  <script>
+    // Add new spec row
+    document.getElementById('addSpecBtn').addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'specRow';
+      row.innerHTML = `
+        <input type="text" placeholder="Key (e.g. Size)" class="specKey" />
+        <input type="text" placeholder="Value (e.g. Medium)" class="specValue" />
+      `;
+      document.getElementById('specificationsContainer').appendChild(row);
+    });
+
+    const form = document.getElementById('productForm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Upload images
+      const imageFiles = document.getElementById('imageUpload').files;
+      if (imageFiles.length === 0) return alert('❌ Please select at least one image.');
+
+      const formData = new FormData();
+      for (let i = 0; i < imageFiles.length; i++) {
+        formData.append('images', imageFiles[i]);
+      }
+
+      const uploadRes = await fetch('/api/products/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) return alert('❌ Image upload failed.');
+      const { images } = await uploadRes.json();
+
+      // Collect form fields
+      const formEntries = new FormData(form);
+      const data = Object.fromEntries(formEntries.entries());
+      data.pictures = images;
+      data.no = Date.now();
+
+      // Collect specifications
+      const specs = [];
+      document.querySelectorAll('.specRow').forEach(row => {
+        const key = row.querySelector('.specKey').value.trim();
+        const value = row.querySelector('.specValue').value.trim();
+        if (key && value) specs.push({ key, value });
+      });
+      data.specifications = specs;
+
+      // Submit product
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        alert('✅ Product submitted!');
+        form.reset();
+        // Reset spec rows
+        document.getElementById('specificationsContainer').innerHTML = `
+          <div class="specRow">
+            <input type="text" placeholder="Key (e.g. Material)" class="specKey" />
+            <input type="text" placeholder="Value (e.g. Gold plated)" class="specValue" />
+          </div>
+        `;
+      } else {
+        const err = await res.json();
+        alert('❌ Error: ' + (err.message || 'Submission failed.'));
+      }
+    });
+  </script>
+</body>
+</html>
